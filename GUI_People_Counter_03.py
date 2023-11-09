@@ -167,8 +167,8 @@ lblVideo = tk.Label(pantalla)
 lblVideo.configure(borderwidth=0)
 # lblVideo.configure(padx=0, pady=0)
 lblVideo.place(x = 309, y = 300)
-inicio = 1 #algo2.0
-#Algo
+inicio = 1
+
 visualizar()
 
 root.mainloop()
