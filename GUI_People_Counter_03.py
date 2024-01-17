@@ -55,7 +55,7 @@ def visualizar():
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="black")
         if warning_msg == False:
             warning_msg = True
-            subprocess.Popen(["python3", "mensaje2.py"])
+            # subprocess.Popen(["python3", "mensaje2.py"])
     else:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgRed)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
