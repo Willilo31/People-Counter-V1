@@ -1,0 +1,15 @@
+Puedo tener dos archivo .py: ScriptA y el ScriptB y tener una archivo.txt que tenga las variables:
+Persona = 5
+Y puedo modificar el archivo.txt
+
+Que puede llamar el ScriptA.py y al ScriptB.py que estan en computadora1 y computadora2 respectivamente, pero que estan conectado entre si porque estan en una LAN y computadora3 tenga el archivo.txt
+
+Que yo pueda desde el ScriptA y el ScriptB modificar a archivo.txt aunque no esten en la misma PC. En este caso quiero que en ScriptA le sumen 1 y en el ScriptB le resten uno y luego imprima en pantalla el valor de la variable persona 1 en ambos scripts y esperen 10 segundo tanto el scriptA como el ScriptB para sumar y restar uno nuevamenta e imprimir
+
+
+
+
+
+
+
+
