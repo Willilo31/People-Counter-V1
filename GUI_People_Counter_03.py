@@ -5,23 +5,36 @@ import imutils
 import numpy as np
 from datetime import datetime
 from ultralytics import YOLO
-import subprocess
+import paramiko
+
+def leer_valor_personas():
+    try:
+        with open("Personas", "r") as file:
+            return int(file.read())
+    except FileNotFoundError:
+        return 0
+
+def guardar_valor_personas(valor):
+    with open("Personas", "w") as file:
+        file.write(str(valor))
 
 def visualizar():
-    global inicio, cap, frame, model, class_names, counter, personas, id_matrix, Start_Line, max_cap, hora_actual
+    global inicio, cap, frame, model, class_names, counter, personas, id_matrix, Start_Line, max_cap, hora_actual, url1
     global texto1, texto2, texto3, texto4, time_now, warning_msg, bg_id, BoxShadow_id
     
     if inicio == 1:
-        model = YOLO("yolov8s.pt")
-        cap = cv2.VideoCapture(0)
+        url = 'http://root:admin@192.168.0.11/axis-cgi/mjpg/video.cgi'
+        model = YOLO("People_Model_S01.pt")
+        cap = cv2.VideoCapture(url)
         cap.set(4, 640)
         cap.set(3, 480)
-        class_names = ["Person"]
+        # class_names = ["Person"]
+        class_names = model.names
         inicio = 0
-        counter = 6
-        personas = 14
+        counter = leer_valor_personas()
+        personas = 10
         id_matrix = []
-        Start_Line = 320
+        Start_Line = 360
         max_cap = 10
         warning_msg = False
         texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
@@ -34,6 +47,7 @@ def visualizar():
         pantalla.delete(bg_id)
         # pantalla.delete(Corner_id)
         pantalla.delete(BoxShadow_id)
+        counter = leer_valor_personas()
 
     hora_actual = datetime.now().strftime("%H:%M:%S")
     if counter < 8:
@@ -82,10 +96,11 @@ def visualizar():
                     x1, y1, x2, y2 = box
                     center_x = int((x1 + x2) / 2)
                     center_y = int((y1 + y2) / 2)
-                    if class_id == 0: 
-                        # cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 4)
-                        # cv2.putText(frame, f"ID #{id} {class_names[0]} {confidence:.2f}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
-                        # cv2.circle(frame, (center_x, center_y), 5, (0, 255, 255), -1)
+
+                    if class_id == 0 or class_id ==1: 
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 4)
+                        # cv2.putText(frame, f"ID #{id} {class_names[class_id]} {confidence:.2f}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
+                        cv2.circle(frame, (center_x, center_y), 5, (0, 255, 255), -1)
 
                         id_exists = False
                         for row in id_matrix:
@@ -95,12 +110,12 @@ def visualizar():
                                 if center_x >= Start_Line and not row[1]: #  |. -> .|
                                     row[1] = True
                                     counter += 1
-                                    personas += 1   
-
+                                    personas += 1
+                                    guardar_valor_personas(counter)   
                                 if center_x <= Start_Line and row[1]:  # .|  ->  |.
                                     row[1] = False
                                     counter -= 1                  
-                            
+                                    guardar_valor_personas(counter)   
                         if not id_exists:
                             if center_x <= Start_Line:
                                 # print("Persona Entrando")
@@ -122,10 +137,9 @@ def visualizar():
 
             lblVideo.configure(image=img)
             lblVideo.image = img
-            pantalla.after(10, visualizar)
+            pantalla.after(1, visualizar)
         else:
             cap.release()
-
 
 def turn_off_action():
     root.destroy()
@@ -172,3 +186,4 @@ inicio = 1
 visualizar()
 
 root.mainloop()
+
