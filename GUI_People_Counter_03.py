@@ -24,7 +24,7 @@ def visualizar():
     
     if inicio == 1:
         url = 'http://root:admin@192.168.0.11/axis-cgi/mjpg/video.cgi'
-        model = YOLO("People_Model_S01.pt")
+        model = YOLO("Heads_IT.pt")
         cap = cv2.VideoCapture(url)
         cap.set(4, 640)
         cap.set(3, 480)
@@ -34,7 +34,7 @@ def visualizar():
         counter = leer_valor_personas()
         personas = 10
         id_matrix = []
-        Start_Line = 360
+        Start_Line = 300
         max_cap = 10
         warning_msg = False
         texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
@@ -53,7 +53,6 @@ def visualizar():
     if counter < 8:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgBlue)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
-        # Corner_id = pantalla.create_image(309, 400, anchor=tk.NW, image=Corner_Yellow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="white")
         texto3 = pantalla.create_text(1323, 550, text=f"Max Capacity: {max_cap:02}     ", font=("Helvetica", 35, "bold"), fill="white")
         texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="white")
@@ -62,14 +61,15 @@ def visualizar():
     elif counter < 10:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgYellow)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
-        # Corner_id = pantalla.create_image(309, 300, anchor=tk.NW, image=Corner_Yellow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="black")
         texto3 = pantalla.create_text(1323, 550, text=f"Max Capacity: {max_cap:02}     ", font=("Helvetica", 35, "bold"), fill="black")
         texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="black")
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="black")
+
         if warning_msg == False:
             warning_msg = True
             # subprocess.Popen(["python3", "mensaje2.py"])
+
     else:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgRed)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
@@ -83,7 +83,7 @@ def visualizar():
         ret, frame = cap.read()
 
         if ret == True:
-            results = model.track(frame, verbose=True, agnostic_nms=True, persist=True, conf = 0.10)
+            results = model.track(frame, verbose=True, agnostic_nms=True, persist=True, conf = 0.30)
             height, width, _ = frame.shape
 
             if results[0].boxes.id is not None:
@@ -127,7 +127,8 @@ def visualizar():
                         center_x = 0
                         center_y = 0
 
-            # cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
+            cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
+            # cv2.line(frame, (0, Start_Line), (width, Start_Line), (255, 255, 255), 3)
             # frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = imutils.resize(frame)
@@ -140,6 +141,11 @@ def visualizar():
             pantalla.after(1, visualizar)
         else:
             cap.release()
+            url = 'http://root:admin@192.168.0.11/axis-cgi/mjpg/video.cgi'
+            cap = cv2.VideoCapture(url)
+            cap.set(4, 640)
+            cap.set(3, 480)
+            pantalla.after(10, visualizar)
 
 def turn_off_action():
     root.destroy()
@@ -170,7 +176,6 @@ BoxShadow = tk.PhotoImage(file="IMG/BoxShadow.png")
 
 #Imagen Demo
 # demo = tk.PhotoImage(file="IMG/imageDemo.png")
-
 
 #Boton de cerrado
 Close = tk.PhotoImage(file="IMG/x-circle.png")
