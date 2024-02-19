@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk 
+from PIL import Image, ImageTk
 import cv2
 import imutils
 import numpy as np
@@ -7,37 +7,50 @@ from datetime import datetime
 from ultralytics import YOLO
 import paramiko
 
+hostname = '10.62.80.200'
+username = 'jetson'
+password = 'jetson'
+remote_file_path = '/home/jetson/Documents/AI/People-Counter-V1/Personas'
+
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(hostname, username=username, password=password)
+
 def leer_valor_personas():
     try:
-        with open("Personas", "r") as file:
-            return int(file.read())
-    except FileNotFoundError:
+        _, stdout, _ = client.exec_command(f'cat {remote_file_path}')
+        current_value = int(stdout.read().decode().strip())
+        return current_value
+    except:
         return 0
 
 def guardar_valor_personas(valor):
-    with open("Personas", "w") as file:
-        file.write(str(valor))
+    try:
+        _, stdout, _ = client.exec_command(f'echo "{valor}" > {remote_file_path}')
+    except:
+        pass
 
 def visualizar():
     global inicio, cap, frame, model, class_names, counter, personas, id_matrix, Start_Line, max_cap, hora_actual, url1
-    global texto1, texto2, texto3, texto4, time_now, warning_msg, bg_id, BoxShadow_id
-    
+    global texto1, texto2, texto3, texto4, time_now, warning_msg, bg_id, BoxShadow_id, text_desarrollo
+   
     if inicio == 1:
-        url = 'http://root:jetson@192.168.0.12/axis-cgi/mjpg/video.cgi'
-        model = YOLO("Heads_IT.pt")
-        cap = cv2.VideoCapture(url) #URL
+        url = 'http://root:jetson@10.62.80.230/axis-cgi/mjpg/video.cgi'
+        model = YOLO("Heads_S03.pt")
+        cap = cv2.VideoCapture(url)
         cap.set(4, 640)
         cap.set(3, 480)
-        # class_names = ["Person"]
         class_names = model.names
         inicio = 0
         counter = leer_valor_personas()
-        personas = 10
+        personas = 800
         id_matrix = []
-        Start_Line = 300
-        max_cap = 10
+        Start_Line = 260
+        max_cap = 1000
         warning_msg = False
-        texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
+        texto1 = pantalla.create_text(610, 113, text="People Counter Vision System - Beta", font=("Helvetica", 35, "bold"), fill="white")
+        # texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
+        text_desarrollo = pantalla.create_text(450, 1000, text="Software Under Development", font=("Helvetica", 25, "bold"), fill="white")
     else:
         pantalla.delete(frame)
         pantalla.delete(texto2)
@@ -50,20 +63,20 @@ def visualizar():
         counter = leer_valor_personas()
 
     hora_actual = datetime.now().strftime("%H:%M:%S")
-    if counter < 8:
+    if counter < 800:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgBlue)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="white")
         texto3 = pantalla.create_text(1323, 550, text=f"Max Capacity: {max_cap:02}     ", font=("Helvetica", 35, "bold"), fill="white")
-        texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="white")
+        texto4 = pantalla.create_text(1337, 700, text=f"---------------- ", font=("Helvetica", 35, "bold"), fill="white")
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="white")
         warning_msg = False
-    elif counter < 10:
+    elif counter < 1000:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgYellow)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="black")
         texto3 = pantalla.create_text(1323, 550, text=f"Max Capacity: {max_cap:02}     ", font=("Helvetica", 35, "bold"), fill="black")
-        texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="black")
+        texto4 = pantalla.create_text(1337, 700, text=f"---------------- ", font=("Helvetica", 35, "bold"), fill="black")
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="black")
 
         if warning_msg == False:
@@ -76,7 +89,7 @@ def visualizar():
         # Corner_id = pantalla.create_image(309, 300, anchor=tk.NW, image=Corner_Red)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="white")
         texto3 = pantalla.create_text(1323, 550, text=f"Max Capacity: {max_cap:02}     ", font=("Helvetica", 35, "bold"), fill="white")
-        texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="white")
+        texto4 = pantalla.create_text(1337, 700, text=f"---------------- ", font=("Helvetica", 35, "bold"), fill="white")
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="white")
 
     if cap is not None:
@@ -97,9 +110,9 @@ def visualizar():
                     center_x = int((x1 + x2) / 2)
                     center_y = int((y1 + y2) / 2)
 
-                    if class_id == 0:
+                    if class_id == 0 or class_id ==1:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 4)
-                        cv2.putText(frame, f"ID #{id} {class_names[class_id]} {confidence:.2f} {row}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
+                        # cv2.putText(frame, f"ID #{id} {class_names[class_id]} {confidence:.2f}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
                         cv2.circle(frame, (center_x, center_y), 5, (0, 255, 255), -1)
 
                         id_exists = False
@@ -107,28 +120,28 @@ def visualizar():
                             if row[0] == id:
                                 id_exists = True
                                 
-                                if center_x >= Start_Line and not row[1]: #  |. -> .|
+                                if center_y >= Start_Line and not row[1]: #  |. -> .|
                                     row[1] = True
-                                    counter += 1
-                                    personas += 1
-                                    guardar_valor_personas(counter)   
-                                if center_x <= Start_Line and row[1]:  # .|  ->  |.
+                                    counter -= 1
+                                    guardar_valor_personas(counter)  
+                                if center_y <= Start_Line and row[1]:  # .|  ->  |.
                                     row[1] = False
-                                    counter -= 1                  
-                                    guardar_valor_personas(counter)   
+                                    counter += 1
+                                    personas += 1                  
+                                    guardar_valor_personas(counter)  
                         if not id_exists:
-                            if center_x <= Start_Line:
+                            if center_y <= Start_Line:
                                 # print("Persona Entrando")
                                 id_matrix.append([id, False])
 
-                            if center_x >= Start_Line:
+                            if center_y >= Start_Line:
                                 # print("Persona Saliendo")
                                 id_matrix.append([id, True])
                         center_x = 0
                         center_y = 0
 
-            cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
-            # cv2.line(frame, (0, Start_Line), (width, Start_Line), (255, 255, 255), 3)
+            # cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
+            cv2.line(frame, (0, Start_Line), (width, Start_Line), (255, 255, 255), 3)
             # frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = imutils.resize(frame)
@@ -141,7 +154,7 @@ def visualizar():
             pantalla.after(1, visualizar)
         else:
             cap.release()
-            url = 'http://root:admin@192.168.0.11/axis-cgi/mjpg/video.cgi'
+            url = 'http://root:jetson@10.62.80.230/axis-cgi/mjpg/video.cgi'
             cap = cv2.VideoCapture(url)
             cap.set(4, 640)
             cap.set(3, 480)
