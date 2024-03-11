@@ -5,7 +5,7 @@ import imutils
 import numpy as np
 from datetime import datetime
 from ultralytics import YOLO
-import paramiko
+# import paramiko 
 
 def leer_valor_personas():
     try:
