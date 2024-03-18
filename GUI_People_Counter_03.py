@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime
 from ultralytics import YOLO
 # import paramiko 
+import paramiko
 
 def leer_valor_personas():
     try:
@@ -26,6 +27,12 @@ def visualizar():
         url = 'http://root:jetson@192.168.0.12/axis-cgi/mjpg/video.cgi'
         model = YOLO("Heads_IT.pt")
         cap = cv2.VideoCapture(url) #URL
+    global texto1, texto2, texto3, texto4, time_now, warning_msg, bg_id, BoxShadow_id, text_desarrollo
+    
+    if inicio == 1:
+        url = 'http://root:jetson@10.62.80.139/axis-cgi/mjpg/video.cgi'
+        model = YOLO("Heads_IT.pt")
+        cap = cv2.VideoCapture(url) 
         cap.set(4, 640)
         cap.set(3, 480)
         # class_names = ["Person"]
@@ -36,8 +43,12 @@ def visualizar():
         id_matrix = []
         Start_Line = 300
         max_cap = 10
+        Start_Line = 200
+        max_cap = 20
         warning_msg = False
-        texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
+        texto1 = pantalla.create_text(610, 113, text="People Counter Vision System - Beta", font=("Helvetica", 35, "bold"), fill="white")
+        # texto1 = pantalla.create_text(550, 113, text="People Counter Vision System", font=("Helvetica", 35, "bold"), fill="white")
+        text_desarrollo = pantalla.create_text(450, 1000, text="Software Under Development", font=("Helvetica", 25, "bold"), fill="white")
     else:
         pantalla.delete(frame)
         pantalla.delete(texto2)
@@ -50,7 +61,7 @@ def visualizar():
         counter = leer_valor_personas()
 
     hora_actual = datetime.now().strftime("%H:%M:%S")
-    if counter < 8:
+    if counter < 180:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgBlue)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="white")
@@ -58,7 +69,7 @@ def visualizar():
         texto4 = pantalla.create_text(1337, 700, text=f"Today's Entries: {personas:03} ", font=("Helvetica", 35, "bold"), fill="white")
         time_now = pantalla.create_text(625, 820, text=f"Time: {hora_actual}", font=("Helvetica", 30, "bold"), fill="white")
         warning_msg = False
-    elif counter < 10:
+    elif counter < 200:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgYellow)
         BoxShadow_id = pantalla.create_image(284, 275, anchor=tk.NW, image=BoxShadow)
         texto2 = pantalla.create_text(1315, 400, text=f"People Inside: {counter:02}    ", font=("Helvetica", 35, "bold"), fill="black")
@@ -100,6 +111,9 @@ def visualizar():
                     if class_id == 0:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 4)
                         cv2.putText(frame, f"ID #{id} {class_names[class_id]} {confidence:.2f} {row}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
+                    if class_id == 0 or class_id ==1: 
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 4)
+                        # cv2.putText(frame, f"ID #{id} {class_names[class_id]} {confidence:.2f}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2,)
                         cv2.circle(frame, (center_x, center_y), 5, (0, 255, 255), -1)
 
                         id_exists = False
@@ -107,7 +121,7 @@ def visualizar():
                             if row[0] == id:
                                 id_exists = True
                                 
-                                if center_x >= Start_Line and not row[1]: #  |. -> .|
+                                if center_y >= Start_Line and not row[1]: #  |. -> .|
                                     row[1] = True
                                     counter += 1
                                     personas += 1
@@ -115,13 +129,19 @@ def visualizar():
                                 if center_x <= Start_Line and row[1]:  # .|  ->  |.
                                     row[1] = False
                                     counter -= 1                  
+                                    counter -= 1
+                                    guardar_valor_personas(counter)   
+                                if center_y <= Start_Line and row[1]:  # .|  ->  |.
+                                    row[1] = False
+                                    counter += 1
+                                    personas += 1                  
                                     guardar_valor_personas(counter)   
                         if not id_exists:
-                            if center_x <= Start_Line:
+                            if center_y <= Start_Line:
                                 # print("Persona Entrando")
                                 id_matrix.append([id, False])
 
-                            if center_x >= Start_Line:
+                            if center_y >= Start_Line:
                                 # print("Persona Saliendo")
                                 id_matrix.append([id, True])
                         center_x = 0
@@ -129,6 +149,8 @@ def visualizar():
 
             cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
             # cv2.line(frame, (0, Start_Line), (width, Start_Line), (255, 255, 255), 3)
+            # cv2.line(frame, (Start_Line, 0), (Start_Line, height), (255, 255, 255), 3)
+            cv2.line(frame, (0, Start_Line), (width, Start_Line), (255, 255, 255), 3)
             # frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = imutils.resize(frame)
@@ -142,6 +164,7 @@ def visualizar():
         else:
             cap.release()
             url = 'http://root:admin@192.168.0.11/axis-cgi/mjpg/video.cgi'
+            url = 'http://root:jetson@10.62.80.139/axis-cgi/mjpg/video.cgi'
             cap = cv2.VideoCapture(url)
             cap.set(4, 640)
             cap.set(3, 480)
@@ -192,3 +215,4 @@ visualizar()
 
 root.mainloop()
 
+root.mainloop()
