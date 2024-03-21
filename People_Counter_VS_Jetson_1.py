@@ -23,7 +23,7 @@ def visualizar():
     global texto1, texto2, texto3, time_now, bg_id, BoxShadow_id, text_desarrollo
    
     if inicio == 1:
-        url = 'http://root:jetson@192.168.0.12/axis-cgi/mjpg/video.cgi' #'http://root:jetson@10.62.80.139/axis-cgi/mjpg/video.cgi'
+        url = 0 #'http://root:jetson@192.168.0.12/axis-cgi/mjpg/video.cgi' #'http://root:jetson@10.62.80.139/axis-cgi/mjpg/video.cgi'
         model = YOLO("Heads_IT.pt")
         cap = cv2.VideoCapture(url)
         cap.set(4, 640)

@@ -22,7 +22,7 @@ def leer_valor_personas():
         current_value = int(stdout.read().decode().strip())
         return current_value
     except:
-        return 0
+        return -10
 
 def guardar_valor_personas(valor):
     try:
@@ -32,7 +32,7 @@ def guardar_valor_personas(valor):
 
 def visualizar():
     global inicio, cap, frame, model, class_names, counter, id_matrix, Start_Line, max_cap, hora_actual
-    global texto1, texto2, texto3, time_now, bg_id, BoxShadow_id, text_desarrollo
+    global texto1, texto2, texto3, time_now, bg_id, BoxShadow_id, text_desarrollo, counter_anterior
    
     if inicio == 1:
         url = 'http://root:jetson@192.168.0.12/axis-cgi/mjpg/video.cgi' #'http://root:jetson@10.62.80.139/axis-cgi/mjpg/video.cgi'
@@ -56,8 +56,11 @@ def visualizar():
         pantalla.delete(bg_id)
         # pantalla.delete(Corner_id)
         pantalla.delete(BoxShadow_id)
+        counter_anterior = counter
         counter = leer_valor_personas()
-
+        if counter == -10:
+            counter = counter_anterior
+        
     hora_actual = datetime.now().strftime("%H:%M:%S")
     if counter < max_cap*0.8:
         bg_id = pantalla.create_image(210, 167, anchor=tk.NW, image=bgBlue)
