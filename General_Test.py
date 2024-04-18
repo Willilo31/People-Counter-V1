@@ -24,7 +24,7 @@ while cap.isOpened():
         # Calcula FPS
         fps = 1/(new_frame_time-prev_frame_time)
         prev_frame_time = new_frame_time
-
+        
         # Convierte el FPS a string para mostrarlo
         fps_text = f"FPS: {fps:.2f}"
 
